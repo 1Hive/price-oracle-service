@@ -88,7 +88,7 @@ async function fetchPairs () {
   }
 
   return pairs
-    .map(({ pair }) => {
+    .map((pair) => {
       return [pair.token0.id, pair.token1.id]
     })
 }
