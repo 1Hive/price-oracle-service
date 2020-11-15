@@ -36,11 +36,6 @@ if (!INTERVAL) {
   process.exit(1)
 }
 
-if (!SUBGRAPH_URI) {
-  logger.error('Please set `SUBGRAPH_URI`.')
-  process.exit(1)
-}
-
 const EXECUTION_MODE_SUBGRAPH = Symbol('SUBGRAPH')
 const EXECUTION_MODE_SINGLE = Symbol('SINGLE')
 
