@@ -67,13 +67,11 @@ async function fetchPairs () {
             first: ${perPage},
             skip: ${perPage * page}
           ) {
-            pair {
-              token0 {
-                id
-              }
-              token1 {
-                id
-              }
+            token0 {
+              id
+            }
+            token1 {
+              id
             }
           } 
         }`
