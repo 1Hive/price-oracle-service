@@ -10,6 +10,8 @@ const {
   MNEMONIC,
   ETH_URI,
   CONTRACT_ADDRESS,
+  TOKEN_A,
+  TOKEN_B,
   SUBGRAPH_URI,
   INTERVAL = ONE_HOUR
 } = process.env
@@ -39,6 +41,24 @@ if (!SUBGRAPH_URI) {
   process.exit(1)
 }
 
+const EXECUTION_MODE_SUBGRAPH = Symbol('SUBGRAPH')
+const EXECUTION_MODE_SINGLE = Symbol('SINGLE')
+
+let executionMode = EXECUTION_MODE_SUBGRAPH
+if (!SUBGRAPH_URI) {
+  if (!TOKEN_A) {
+    logger.error('Please set `TOKEN_A` or `SUBGRAPH_URI`.')
+    process.exit(1)
+  }
+
+  if (!TOKEN_B) {
+    logger.error('Please set `TOKEN_B` or `SUBGRAPH_URI`.')
+    process.exit(1)
+  }
+
+  executionMode = EXECUTION_MODE_SINGLE
+}
+
 // Set up provider and wallet
 const provider = ethers.getDefaultProvider(ETH_URI)
 const wallet = ethers.Wallet
@@ -49,6 +69,12 @@ const wallet = ethers.Wallet
 logger.info(`Acting as ${wallet.address}`)
 logger.info(`Connected to ${ETH_URI}`)
 logger.info(`Calling oracle on ${CONTRACT_ADDRESS} every ${INTERVAL}ms`)
+
+if (executionMode === EXECUTION_MODE_SUBGRAPH) {
+  logger.info(`Updating prices for all pairs on specified subgraph.`)
+} else {
+  logger.info(`Updating price for a single token pair: ${TOKEN_A}-${TOKEN_B}.`)
+}
 
 async function fetchPairs () {
   let pairs = []
@@ -97,7 +123,13 @@ async function callOracle (
   signer,
   oracleAddress,
 ) {
-  const pairs = await fetchPairs(oracleAddress)
+  let pairs
+  if (executionMode === EXECUTION_MODE_SUBGRAPH) {
+    pairs = await fetchPairs(oracleAddress)
+  } else {
+    pairs = [[TOKEN_A, TOKEN_B]]
+  }
+
   const oracle = new ethers.Contract(
     oracleAddress,
     [
