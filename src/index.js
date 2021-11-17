@@ -137,7 +137,7 @@ async function callOracle (
   await provider.ready()
 
   // Check if network supports EIP1559
-  const SUPPORTS_EIP1559 = Boolean(await provider.getBlock("latest")).baseFee)
+  const SUPPORTS_EIP1559 = Boolean(await provider.getBlock("latest").baseFee)
 
   // Calculate fees
   const feeData = await provider.getFeeData()
@@ -147,7 +147,7 @@ async function callOracle (
     OVERRIDES = {
       gasLimit: 1400000,
       maxFeePerGas: feeData.maxFeePerGas,
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
     }
   } else {
     OVERRIDES = {
