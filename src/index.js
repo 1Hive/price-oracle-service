@@ -134,7 +134,7 @@ async function callOracle (
   )
 
   // Wait until the network has heen established
-  await provider.ready()
+  await provider.ready
 
   // Check if network supports EIP1559
   const SUPPORTS_EIP1559 = Boolean(await provider.getBlock("latest").baseFee)
