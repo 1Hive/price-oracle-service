@@ -2,7 +2,6 @@ const ethers = require('ethers')
 const fetch = require('node-fetch')
 const logger = require('./logger')
 
-const ONE_GWEI = 1000000000
 const ONE_HOUR = 60 * 60 * 1000
 
 // Configuration
@@ -134,16 +133,38 @@ async function callOracle (
     signer
   )
 
+  // Wait until the network has heen established
+  await provider.ready()
+
+  // Check if network supports EIP1559
+  const SUPPORTS_EIP1559 = Boolean(await provider.getBlock("latest")).baseFee)
+
+  // Calculate fees
+  const feeData = await provider.getFeeData()
+
+  let OVERRIDES
+  if (SUPPORTS_EIP1559){
+    OVERRIDES = {
+      gasLimit: 1400000,
+      maxFeePerGas: feeData.maxFeePerGas,
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+    }
+  } else {
+    OVERRIDES = {
+      gasPrice: feeData.gasPrice, gasLimit: 1400000
+    }
+  }
+
   logger.info('Calling oracle...')
   for (const [tokenA, tokenB] of pairs) {
     try {
-      const canUpdate = await oracle.canUpdate(tokenA, tokenB, { gasPrice: ONE_GWEI, gasLimit: 1400000 })
+      const canUpdate = await oracle.canUpdate(tokenA, tokenB, OVERRIDES)
       if (!canUpdate) {
         logger.info(`- No need to update ${tokenA}-${tokenB} pair.`)
         continue
       }
 
-      const tx = await oracle.update(tokenA, tokenB, { gasPrice: ONE_GWEI, gasLimit: 1400000 })
+      const tx = await oracle.update(tokenA, tokenB, OVERRIDES)
       logger.info(`- Sent transaction to update ${tokenA}-${tokenB} pair (${tx.hash})`)
       await tx.wait(2)
     } catch (err) {
