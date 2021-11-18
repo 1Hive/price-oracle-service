@@ -142,16 +142,22 @@ async function callOracle (
   // Calculate fees
   const feeData = await provider.getFeeData()
 
+  // Get nonce
+  const nonce = await provider.getTransactionCount(wallet.address)
+
   let OVERRIDES
   if (SUPPORTS_EIP1559){
     OVERRIDES = {
       gasLimit: 1400000,
       maxFeePerGas: feeData.maxFeePerGas,
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      nonce: nonce
     }
   } else {
     OVERRIDES = {
-      gasPrice: feeData.gasPrice, gasLimit: 1400000
+      gasPrice: feeData.gasPrice,
+      gasLimit: 1400000,
+      nonce: nonce
     }
   }
 
